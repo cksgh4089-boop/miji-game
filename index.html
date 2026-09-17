@@ -140,35 +140,30 @@ submit.addEventListener('click', () => {
     return;
   }
 
-  locked=true;
   let score=0;
-
-  buttons.forEach(btn => {
-    const isCorrect=btn.dataset.correct==='true';
-    const isSelected=btn.classList.contains('selected');
-
-    if (isSelected && isCorrect) score++;
-
-    if (isSelected) {
-      btn.classList.add(isCorrect ? 'correct' : 'wrong');
-      btn.querySelector('.mark').textContent = isCorrect ? '✓' : '✕';
-    }
+  const selectedAnswers = selected.map(btn => {
+    const isCorrect = btn.dataset.correct === 'true';
+    if (isCorrect) score++;
+    return {
+      number: btn.querySelector('.num').textContent.trim(),
+      text: btn.querySelector('.txt').textContent.trim(),
+      correct: isCorrect
+    };
   });
 
-  result.style.display='block';
+  const resultData = {
+    score,
+    selectedAnswers,
+    correctAnswers: [
+      '공룡 머리에 모자가 생겼다',
+      '공룡 등에 수건이 생겼다',
+      '사진 아래쪽 공룡 피규어가 사라졌다'
+    ],
+    savedAt: Date.now()
+  };
 
-  if (score===3) {
-    result.innerHTML =
-      '<b>🎉 정답! 3개 모두 맞았습니다.</b><br>' +
-      '정답은 ① 공룡 머리의 모자, ② 공룡 등에 생긴 수건, ③ 사진 아래쪽에서 사라진 공룡 피규어입니다.';
-  } else {
-    result.innerHTML =
-      '<b>' + score + ' / 3개 정답!</b><br>' +
-      '초록색은 맞게 고른 항목, 빨간색은 틀리게 고른 항목입니다. 다시 도전해보세요.';
-  }
-
-  submit.style.display='none';
-  reset.style.display='block';
+  localStorage.setItem('mijiGameResult', JSON.stringify(resultData));
+  window.location.href = 'result.html';
 });
 
 reset.addEventListener('click', () => location.reload());
