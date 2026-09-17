@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>미지의 세계 틀린그림찾기 결과</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100vh;
+  background:linear-gradient(180deg,#071827,#0b2233);
+  color:#fff;font-family:system-ui,-apple-system,'Noto Sans KR',sans-serif;
+}
+main{max-width:760px;margin:auto;padding:22px 16px 40px}
+.result-card{
+  margin-top:24px;background:#0d2637;border:1px solid #294a5e;
+  border-radius:24px;padding:24px;box-shadow:0 18px 55px rgba(0,0,0,.25)
+}
+.badge{
+  display:inline-block;background:#173e54;border:1px solid #3d6075;
+  border-radius:999px;padding:7px 12px;font-weight:800;color:#cfe8f7
+}
+h1{font-size:clamp(28px,7vw,46px);margin:16px 0 8px}
+.sub{color:#cfe8f7;line-height:1.6;margin:0 0 20px}
+.score{
+  text-align:center;background:#102f42;border:1px solid #35627b;
+  border-radius:20px;padding:22px 12px;margin:18px 0
+}
+.score .big{font-size:clamp(44px,12vw,72px);font-weight:1000;line-height:1}
+.score .msg{margin-top:10px;font-size:18px;font-weight:900}
+h2{font-size:20px;margin:24px 0 10px}
+.answer-list{display:grid;gap:10px}
+.answer{
+  display:grid;grid-template-columns:38px 1fr;gap:10px;align-items:start;
+  background:#153447;border:1px solid #3d6075;border-radius:14px;padding:13px
+}
+.answer.good{background:#174f38;border-color:#65c58c}
+.answer.bad{background:#582d33;border-color:#e07a85}
+.icon{
+  width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(255,255,255,.12);font-weight:1000
+}
+.answer .label{font-weight:900}
+.answer .small{font-size:13px;color:#d8e9f2;margin-top:3px}
+.correct-box{
+  margin-top:20px;background:#102b3d;border:1px solid #345c72;
+  border-radius:16px;padding:16px;line-height:1.7
+}
+.correct-box ol{margin:8px 0 0;padding-left:24px}
+button{
+  width:100%;border:0;border-radius:14px;padding:15px;margin-top:18px;
+  font-size:17px;font-weight:900;cursor:pointer
+}
+.retry{background:#ffdf59;color:#13202a}
+.home{background:#eef7fb;color:#10202c}
+.empty{color:#cfe8f7;text-align:center;padding:32px 0}
+</style>
+</head>
+<body>
+<main>
+  <div class="result-card">
+    <span class="badge">🦖 미지의 세계 틀린그림찾기</span>
+    <h1>결과 확인</h1>
+    <p class="sub">선택한 답과 정답을 확인해보세요.</p>
+
+    <div id="content"></div>
+    <button class="retry" id="retry">다시 도전하기</button>
+  </div>
+</main>
+
+<script>
+const content = document.getElementById('content');
+const retry = document.getElementById('retry');
+
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'",'&#039;');
+}
+
+let data = null;
+try {
+  data = JSON.parse(localStorage.getItem('mijiGameResult'));
+} catch(e) {}
+
+if (!data || !Array.isArray(data.selectedAnswers)) {
+  content.innerHTML = '<div class="empty">저장된 게임 결과가 없습니다.<br>다시 게임에 참여해주세요.</div>';
+} else {
+  const perfect = data.score === 3;
+  const selectedHtml = data.selectedAnswers.map(item => `
+    <div class="answer ${item.correct ? 'good' : 'bad'}">
+      <div class="icon">${item.correct ? '✓' : '✕'}</div>
+      <div>
+        <div class="label">${escapeHtml(item.number)}. ${escapeHtml(item.text)}</div>
+        <div class="small">${item.correct ? '정답입니다.' : '틀린 선택입니다.'}</div>
+      </div>
+    </div>
+  `).join('');
+
+  const correctHtml = data.correctAnswers.map(x => `<li>${escapeHtml(x)}</li>`).join('');
+
+  content.innerHTML = `
+    <div class="score">
+      <div class="big">${data.score} / 3</div>
+      <div class="msg">${perfect ? '🎉 3개 모두 맞았습니다!' : '🔎 조금만 더 찾아보세요!'}</div>
+    </div>
+
+    <h2>내가 선택한 답</h2>
+    <div class="answer-list">${selectedHtml}</div>
+
+    <div class="correct-box">
+      <b>✅ 실제 정답 3개</b>
+      <ol>${correctHtml}</ol>
+    </div>
+  `;
+}
+
+retry.addEventListener('click', () => {
+  localStorage.removeItem('mijiGameResult');
+  window.location.href = 'index.html';
+});
+</script>
+</body>
+</html>
